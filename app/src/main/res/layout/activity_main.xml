@@ -38,10 +38,10 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="@android:color/holo_red_dark" />
+        app:tint="@color/red" />
 
     <ImageView
-        android:id="@+id/pauseButton"
+        android:id="@+id/stopButton"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="50dp"
@@ -49,16 +49,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/recordButton"
-        app:tint="@android:color/darker_gray" />
+        app:tint="@color/blue" />
 
     <ImageView
-        android:id="@+id/startButton"
+        android:id="@+id/playButton"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="50dp"
         android:src="@drawable/round_play_arrow_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/recordButton"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="@color/black"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
