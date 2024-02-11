@@ -33,8 +33,9 @@ import java.io.IOException
  * Handler
  * */
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnTimerTickListener {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var timer: Timer
     private var recorder: MediaRecorder? = null
     private var player: MediaPlayer? = null
     private var fileName: String = ""
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        timer = Timer(this)
         fileName = "${externalCacheDir?.absolutePath}/audioRecord.3gp"
 
         binding.recordButton.setOnClickListener {
@@ -130,14 +132,15 @@ class MainActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 Log.e("record APP (recording)", "prepare() failed: $e")
                 Toast.makeText(
-                    this@MainActivity,
-                    "녹음을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.",
-                    Toast.LENGTH_SHORT
+                    this@MainActivity, "녹음을 시작할 수 없습니다. 잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT
                 ).show()
             }
 
             start()
         }
+
+        binding.waveformView.clearData()
+        timer.start()
 
         binding.recordButton.setImageDrawable(
             ContextCompat.getDrawable(this, R.drawable.round_stop_24)
@@ -153,8 +156,10 @@ class MainActivity : AppCompatActivity() {
             stop()
             release()
         }
-
         recorder = null
+
+        timer.stop()
+
         state = State.RELEASE
 
         binding.recordButton.setImageDrawable(
@@ -176,14 +181,15 @@ class MainActivity : AppCompatActivity() {
             } catch (e: IOException) {
                 Log.e("record APP (playing)", "prepare() failed: $e")
                 Toast.makeText(
-                    this@MainActivity,
-                    "녹음 파일을 재생할 수 없습니다. 다시 녹음을 진행해주세요.",
-                    Toast.LENGTH_SHORT
+                    this@MainActivity, "녹음 파일을 재생할 수 없습니다. 다시 녹음을 진행해주세요.", Toast.LENGTH_SHORT
                 ).show()
             }
 
             start()
         }
+
+        binding.waveformView.clearWave()
+        timer.start()
 
         player?.setOnCompletionListener { stopPlaying() }
 
@@ -197,40 +203,34 @@ class MainActivity : AppCompatActivity() {
         player?.release()
         player = null
 
+        timer.stop()
+
         binding.recordButton.isEnabled = true
         binding.recordButton.alpha = 1.0f
     }
 
     /** 권한 요청 설명 다이얼로그 */
     private fun showPermissionRationalDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("녹음 권한 허용 안내")
+        AlertDialog.Builder(this).setTitle("녹음 권한 허용 안내")
             .setMessage("녹음기를 사용하기 위해서는 녹음 권한이 필요합니다. 권한을 허용할까요?")
             .setPositiveButton("허용") { _, _ -> requestRecordAudioPermission() }
-            .setNegativeButton("취소") { dialogInterface, _ -> dialogInterface.cancel() }
-            .show()
+            .setNegativeButton("취소") { dialogInterface, _ -> dialogInterface.cancel() }.show()
     }
 
     /** 설정 화면 안내 다이얼로그 */
     private fun showPermissionSettingDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("서비스 이용 안내")
+        AlertDialog.Builder(this).setTitle("서비스 이용 안내")
             .setMessage("녹음기를 사용하기 위해서는 녹음 권한이 반드시 필요합니다. 설정 화면으로 이동할까요?\n(권한 → 마이크 → 권한 설정)")
             .setPositiveButton("설정으로 이동") { _, _ -> navigateToAppSetting() }
-            .setNegativeButton("취소") { dialogInterface, _ -> dialogInterface.cancel() }
-            .show()
+            .setNegativeButton("취소") { dialogInterface, _ -> dialogInterface.cancel() }.show()
     }
 
     /** 녹음 덮어쓰기 확인 다이얼로그 */
     private fun showOverwriteDialog() {
-        AlertDialog.Builder(this)
-            .setTitle("녹음 덮어쓰기")
-            .setMessage("이미 녹음된 파일이 있습니다. 덮어쓸까요?")
-            .setPositiveButton("네") { _, _ -> startRecording() }
-            .setNegativeButton("아니요") { _, _ ->
+        AlertDialog.Builder(this).setTitle("녹음 덮어쓰기").setMessage("이미 녹음된 파일이 있습니다. 덮어쓸까요?")
+            .setPositiveButton("네") { _, _ -> startRecording() }.setNegativeButton("아니요") { _, _ ->
                 Toast.makeText(this, "기존 녹음을 유지합니다.", Toast.LENGTH_SHORT).show()
-            }
-            .show()
+            }.show()
     }
 
     /** 설정 화면 이동 */
@@ -243,9 +243,7 @@ class MainActivity : AppCompatActivity() {
 
     /** 권한 요청 결과 처리 */
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_RECORD_AUDIO_CODE) {
@@ -258,6 +256,20 @@ class MainActivity : AppCompatActivity() {
                     showPermissionSettingDialog()
                 }
             }
+        }
+    }
+
+    override fun onTick(duration: Long) {
+        val milliSeconds = duration % 1000 / 10
+        val seconds = (duration / 1000) % 60
+        val minutes = (duration / 1000) / 60
+
+        binding.timeTextView.text = String.format("%02d:%02d.%02d", minutes, seconds, milliSeconds)
+
+        if (state == State.PLAYING) {
+            binding.waveformView.replayAmplitude()
+        } else if (state == State.RECORDING) {
+            binding.waveformView.addAmplitude(recorder?.maxAmplitude?.toFloat() ?: 0f)
         }
     }
 }

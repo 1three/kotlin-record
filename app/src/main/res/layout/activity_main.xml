@@ -11,7 +11,7 @@
         android:id="@+id/timeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00.00"
+        android:text="@string/timer_default"
         android:textSize="40sp"
         app:layout_constraintBottom_toTopOf="@+id/waveformView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- 파형 -->
-    <View
+    <fastcampus.part2.record.WaveformView
         android:id="@+id/waveformView"
         android:layout_width="0dp"
         android:layout_height="250dp"
@@ -34,32 +34,35 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="50dp"
+        android:contentDescription="@string/description_recordStart"
         android:src="@drawable/round_fiber_manual_record_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/red" />
+        app:tint="@color/purple" />
 
     <ImageView
         android:id="@+id/stopButton"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="50dp"
+        android:contentDescription="@string/description_playStop"
         android:src="@drawable/round_stop_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/recordButton"
-        app:tint="@color/blue" />
+        app:tint="@color/black" />
 
     <ImageView
         android:id="@+id/playButton"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginBottom="50dp"
+        android:contentDescription="@string/description_playStart"
         android:src="@drawable/round_play_arrow_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/recordButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/black"/>
+        app:tint="@color/black" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
